@@ -51,6 +51,12 @@ max_clip_range: 15
 clip_volume: 1
 # Custom Item Schematic Configs
 custom_item_schematic: 'Crucifix'
+# Custom Item Effects (Look up the Discord for more infos, Effect Duration is decided by the 'CustomItemHealDur' value 
+custom_item_effects:
+- Asphyxiated
+- Flashed
+- Blurred
+- Concussed
 # Custom Item Damage Type Whitelist (Look up the Discord for more infos)
 custom_item_damage_types:
 - Com15
@@ -137,9 +143,82 @@ custom_item_name: 'Cruxifix'
 # Custom Item Description
 custom_item_description: 'Saves you from Death!'
 # Custom Item Use Hint
-custom_item_u_h: |-
+custom_item_u_h:
+- |-
   "For whoever wants to save their life will lose it, but whoever loses their life for me will find it."
   — Matthew 16:25
+- |-
+  "Even though I walk through the valley of the shadow of death, I will fear no evil, for you are with me."
+  — Psalm 23:4
+- |-
+  "The Lord will fight for you; you need only to be still."
+  — Exodus 14:14
+- |-
+  "God is our refuge and strength, an ever-present help in trouble."
+  — Psalm 46:1
+- |-
+  "The name of the Lord is a fortified tower; the righteous run to it and are safe."
+  — Proverbs 18:10
+- |-
+  "I have told you these things, so that in me you may have peace. In this world you will have trouble. But take heart! I have overcome the world."
+  — John 16:33
+- |-
+  "He will cover you with his feathers, and under his wings you will find refuge."
+  — Psalm 91:4
+- |-
+  "When you pass through the waters, I will be with you; and when you pass through the rivers, they will not sweep over you."
+  — Isaiah 43:2
+- |-
+  "The Lord is my light and my salvation—whom shall I fear?"
+  — Psalm 27:1
+- |-
+  "Do not be afraid of those who kill the body but cannot kill the soul."
+  — Matthew 10:28
+- |-
+  "The Lord your God goes with you; he will never leave you nor forsake you."
+  — Deuteronomy 31:6
+- |-
+  "He gives strength to the weary and increases the power of the weak."
+  — Isaiah 40:29
+- |-
+  "My grace is sufficient for you, for my power is made perfect in weakness."
+  — 2 Corinthians 12:9
+- |-
+  "Be strong and courageous. Do not be afraid; do not be discouraged."
+  — Joshua 1:9
+- |-
+  "Cast all your anxiety on him because he cares for you."
+  — 1 Peter 5:7
+- |-
+  "I sought the Lord, and he answered me; he delivered me from all my fears."
+  — Psalm 34:4
+- |-
+  "No weapon forged against you will prevail."
+  — Isaiah 54:17
+- |-
+  "In peace I will lie down and sleep, for you alone, Lord, make me dwell in safety."
+  — Psalm 4:8
+- |-
+  "Call on me in the day of trouble; I will deliver you."
+  — Psalm 50:15
+- |-
+  "With God we will gain the victory, and he will trample down our enemies."
+  — Psalm 60:12
+- |-
+  "Because you are my help, I sing in the shadow of your wings."
+  — Psalm 63:7
+- |-
+  "You are my hiding place; you will protect me from trouble."
+  — Psalm 32:7
+- |-
+  "Fear not, for I have redeemed you; I have called you by name, you are mine."
+  — Isaiah 43:1
+- |-
+  "He will not let your foot slip—he who watches over you will not slumber."
+  — Psalm 121:3
+- |-
+  "The angel of the Lord encamps around those who fear him, and he delivers them."
+  — Psalm 34:7
 ```
 ## Showcase:
 
