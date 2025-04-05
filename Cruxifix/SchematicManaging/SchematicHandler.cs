@@ -20,8 +20,16 @@ namespace Cruxifix.SchematicManaging
         private readonly Dictionary<uint, string> CustomItemSchematics = new()
         {
             { Config.CustomItemID, Config.CustomItemSchematic },
+            { Config.BibleCustomItemID, Config.BibleCustomSchematicName }
         };
 
+        private readonly Dictionary<uint, Vector3> CustomItemSchematicsScales = new()
+        {
+            { Config.CustomItemID, Config.CustomItemScaleItem },
+            { Config.BibleCustomItemID, Config.BibleCustomItemScale }
+        };
+
+        
         private CoroutineHandle _spawnCoroutine;
 
         public void SubscribeEvents()
@@ -79,8 +87,19 @@ namespace Cruxifix.SchematicManaging
                     {
                         if (CustomItemSchematics.TryGetValue(customItem!.Id, out var schematicName))
                         {
-                            pickup.Scale = Config.CustomItemScaleItem;
-                            Timing.RunCoroutine(AttachSchematicToPickup(pickup, schematicName));
+                            pickup.Scale = CustomItemSchematicsScales[customItem.Id];
+                            var schematic = ObjectSpawner.SpawnSchematic(
+                                schematicName,
+                                pickup.Position,
+                                Quaternion.Euler(pickup.Rotation.eulerAngles.x, pickup.Rotation.eulerAngles.y, 0),
+                                Vector3.one,
+                                MapUtils.GetSchematicDataByName(schematicName),
+                                true
+                            );
+                            Events.CustomEvents.InvokeSchematicItemDropped(
+                                new Events.PlayerDropSchematicItemEventArgs(pickup.PreviousOwner, schematic, customItem.Id, pickup, pickup.Base.ItemId.TypeId)
+                            );
+                            Timing.RunCoroutine(AttachSchematicToPickup(pickup, schematic));
                         }
                     }
                 }
@@ -89,19 +108,10 @@ namespace Cruxifix.SchematicManaging
             }
         }
 
-        private IEnumerator<float> AttachSchematicToPickup(Pickup pickup, string schematicName)
+        private IEnumerator<float> AttachSchematicToPickup(Pickup pickup, SchematicObject schematic)
         {
             if (pickup == null)
                 yield break;
-
-            var schematic = ObjectSpawner.SpawnSchematic(
-                schematicName,
-                pickup.Position,
-                Quaternion.Euler(pickup.Rotation.eulerAngles.x, pickup.Rotation.eulerAngles.y, 0),
-                Vector3.one,
-                MapUtils.GetSchematicDataByName(schematicName),
-                true
-            );
 
             if (schematic == null)
                 yield break;
@@ -112,7 +122,7 @@ namespace Cruxifix.SchematicManaging
             {
                 schematic.transform.position = pickup.Position;
                 var rotation = pickup.Rotation.eulerAngles;
-                schematic.transform.rotation = Quaternion.Euler(rotation.x, -rotation.y, 0);
+                schematic.transform.rotation = Quaternion.Euler(rotation.x, rotation.y, 0);
 
                 yield return Timing.WaitForOneFrame;
             }

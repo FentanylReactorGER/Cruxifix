@@ -14,19 +14,20 @@ namespace Cruxifix.SchematicManaging
 {
     public class SchematicHolder
     {
-        public SchematicObject HeldSchematic { get; private set; }
         private static readonly Config Config = Plugin.Singleton.Config;
 
         private readonly Vector3 schematicScale;
         private readonly Vector3 offset;
         private readonly Quaternion initialRotation;
 
-        private CoroutineHandle floatingCoroutine;
-
         public Dictionary<uint, string> CustomItemSchematics { get; set; } = new()
         {
             { Config.CustomItemID, Config.CustomItemSchematic },
+            { Config.BibleCustomItemID, Config.BibleCustomSchematicName }
         };
+
+        private readonly Dictionary<Player, SchematicObject> activeSchematics = new();
+        private readonly Dictionary<Player, CoroutineHandle> followCoroutines = new();
 
         public SchematicHolder(Vector3 scale, Vector3 offset, Quaternion rotation)
         {
@@ -37,15 +38,21 @@ namespace Cruxifix.SchematicManaging
 
         public void OnChangedItem(ChangedItemEventArgs ev)
         {
-            if (HeldSchematic != null)
+            if (activeSchematics.TryGetValue(ev.Player, out var existingSchematic))
             {
-                HeldSchematic.Destroy();
-                HeldSchematic = null;
+                existingSchematic.Destroy();
+                activeSchematics.Remove(ev.Player);
             }
 
-            if (ev.Item != null && CustomItem.TryGet(ev.Item, out var item) && CustomItemSchematics.TryGetValue(item!.Id, out var schematicName))
+            if (followCoroutines.TryGetValue(ev.Player, out var handle))
             {
-                HeldSchematic = ObjectSpawner.SpawnSchematic(
+                Timing.KillCoroutines(handle);
+                followCoroutines.Remove(ev.Player);
+            }
+
+            if (ev.Item != null && CustomItem.TryGet(ev.Item, out var item) && CustomItemSchematics.TryGetValue(item.Id, out var schematicName))
+            {
+                var schematic = ObjectSpawner.SpawnSchematic(
                     schematicName,
                     ev.Player.Position,
                     null,
@@ -53,27 +60,49 @@ namespace Cruxifix.SchematicManaging
                     MapUtils.GetSchematicDataByName(schematicName)
                 );
 
-                floatingCoroutine = Timing.RunCoroutine(FollowPlayer(ev.Player, HeldSchematic));
+                activeSchematics[ev.Player] = schematic;
+                followCoroutines[ev.Player] = Timing.RunCoroutine(FollowPlayer(ev.Player, schematic));
+                
+                Events.CustomEvents.InvokeSchematicItemEquipped(
+                    new Events.PlayerEquippedSchematicItemEventArgs(ev.Player, schematic, item.Id, ev.Item.Base)
+                );
             }
         }
 
-        public void DestroyHeld()
+        public void DestroyHeld(Player player)
         {
-            if (HeldSchematic != null)
+            if (activeSchematics.TryGetValue(player, out var schematic))
             {
-                HeldSchematic.Destroy();
-                HeldSchematic = null;
+                schematic.Destroy();
+                activeSchematics.Remove(player);
             }
 
-            if (floatingCoroutine.IsRunning)
-                Timing.KillCoroutines(floatingCoroutine);
+            if (followCoroutines.TryGetValue(player, out var handle))
+            {
+                Timing.KillCoroutines(handle);
+                followCoroutines.Remove(player);
+            }
         }
 
-        private IEnumerator<float> FollowPlayer(Player player, SchematicObject schematic)
+        public void DestroyAll()
         {
-            if (schematic == null)
-                yield break;
+            foreach (var kvp in activeSchematics)
+                kvp.Value.Destroy();
 
+            foreach (var handle in followCoroutines.Values)
+                Timing.KillCoroutines(handle);
+
+            activeSchematics.Clear();
+            followCoroutines.Clear();
+        }
+
+        public SchematicObject GetHeldSchematic(Player player)
+        {
+            return activeSchematics.TryGetValue(player, out var schematic) ? schematic : null;
+        }
+
+        public IEnumerator<float> FollowPlayer(Player player, SchematicObject schematic)
+        {
             while (!player.IsDead && player.Role.Team != Team.Dead && player.CurrentItem != null &&
                    CustomItem.TryGet(player.CurrentItem, out var item) &&
                    CustomItemSchematics.ContainsKey(item!.Id) &&
@@ -88,7 +117,7 @@ namespace Cruxifix.SchematicManaging
                 yield return Timing.WaitForOneFrame;
             }
 
-            DestroyHeld();
+            DestroyHeld(player);
         }
     }
 }
