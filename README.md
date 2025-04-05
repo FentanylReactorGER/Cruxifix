@@ -222,4 +222,4 @@ custom_item_u_h:
 ```
 ## Showcase:
 
-SOON IM LAZY RN!!!
+Video: https://youtu.be/54IqG0VpV4Y
