@@ -356,4 +356,4 @@ bible_verses_for_bible_item:
 ```
 ## Showcase:
 
-Video: https://youtu.be/54IqG0VpV4Y
+Video: https://www.youtube.com/watch?v=54IqG0VpV4Y
