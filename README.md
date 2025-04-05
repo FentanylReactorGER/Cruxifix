@@ -37,18 +37,75 @@ n/A
 # Should the plugin be enabled
 is_enabled: true
 # Should the plugin display a debug message
-debug: false
+debug: true
 # HSM Hints Configs (ONLY APPLIES FOR MY PLUGIN AND WONT BREAK OTHER PLUGINS)
 global_hint_duration: 5
 global_hint_size: 30
 global_hint_y: 950
 # Custom Item Sound (AudioPath will only DISPLAY your Current Path do NOT edit, edit Clip name and IF nessesary ClipPathFolder)
 clip_name: 'CruxifixSound.ogg'
+clip_name_bible: 'BibleSound.ogg'
 clip_path_folder: 'audio'
-audio_path: 'C:\Users\Administrator\AppData\Roaming\EXILED\Plugins\audio\CruxifixSound.ogg'
 clip_duration: 5
 max_clip_range: 15
 clip_volume: 1
+# Custom Item 914 Configs (Wont destroy Basegame but might conflict with other 914 Plugins)
+custom914: true
+custom_item_recipe_dictionary:
+- item_in: KeycardO5
+  custom_item_input: 
+  item_out: 
+  custom_item_output: 6969
+  knob_setting: Fine
+  chance: 75
+- item_in: 
+  custom_item_input: 6969
+  item_out: Coin
+  custom_item_output: 
+  knob_setting: Coarse
+  chance: 20
+- item_in: 
+  custom_item_input: 6969
+  item_out: Adrenaline
+  custom_item_output: 
+  knob_setting: OneToOne
+  chance: 40
+- item_in: 
+  custom_item_input: 6969
+  item_out: SCP500
+  custom_item_output: 
+  knob_setting: Fine
+  chance: 30
+- item_in: 
+  custom_item_input: 6969
+  item_out: 
+  custom_item_output: 6700
+  knob_setting: VeryFine
+  chance: 15
+- item_in: Coin
+  custom_item_input: 
+  item_out: 
+  custom_item_output: 6969
+  knob_setting: VeryFine
+  chance: 5
+- item_in: 
+  custom_item_input: 6969
+  item_out: 
+  custom_item_output: 6999
+  knob_setting: Coarse
+  chance: 30
+- item_in: 
+  custom_item_input: 6969
+  item_out: 
+  custom_item_output: 6969
+  knob_setting: OneToOne
+  chance: 10
+- item_in: 
+  custom_item_input: 1488
+  item_out: 
+  custom_item_output: 6969
+  knob_setting: Fine
+  chance: 20
 # Custom Item Schematic Configs
 custom_item_schematic: 'Crucifix'
 # Custom Item Effects (Look up the Discord for more infos, Effect Duration is decided by the 'CustomItemHealDur' value 
@@ -65,6 +122,7 @@ custom_item_damage_types:
 - Logicer
 - ParticleDisruptor
 - Shotgun
+- Falldown
 - Jailbird
 - Revolver
 - Scp018
@@ -86,6 +144,16 @@ custom_item_damage_types:
 - Frmg0
 - Fsp9
 - CardiacArrest
+# Effects the Bible Crures when applied (Put NEGATIVE effects here or effects dealing DAMAGE)
+bible_heal_effect_list:
+- Bleeding
+- Corroding
+- Poisoned
+- Scp207
+- Scp1853
+- SeveredHands
+- CardiacArrest
+- SeveredEyes
 # Custom Item Advanced Editing (More on your Requests)
 custom_item_offset:
   x: 0
@@ -107,9 +175,47 @@ custom_item_scale_item:
 custom_item_heal_dur: 2
 # Custom Item ID
 custom_item_i_d: 6969
-# Custom Item Weight
+# Custom Items Weight
 custom_item_weight: 1
-# Custom Item SpawnProperties
+# Holy Bible Configs
+bible_custom_item_i_d: 6700
+bible_custom_item_range: 15
+bible_custom_item_scale:
+  x: 6.7
+  y: 1
+  z: 4.2
+bible_custom_item_spawn_properties:
+  limit: 7
+  dynamic_spawn_points: []
+  static_spawn_points: []
+  role_spawn_points: []
+  room_spawn_points: []
+  locker_spawn_points:
+  - zone: Unspecified
+    use_chamber: true
+    offset:
+      x: 0
+      y: 0
+      z: 0
+    type: Medkit
+    chance: 70
+  - zone: Unspecified
+    use_chamber: true
+    offset:
+      x: 0
+      y: 0
+      z: 0
+    type: Misc
+    chance: 100
+bible_custom_item_effects:
+- Asphyxiated
+- Flashed
+- Blurred
+- Concussed
+bible_custom_effect_dur: 5
+bible_custom_schematic_name: 'HolyBible'
+bible_custom_animation_name: 'BibleAnimation'
+# Custom Items SpawnProperties
 custom_item_spawn_properties:
   limit: 7
   dynamic_spawn_points: []
@@ -139,7 +245,7 @@ custom_item_spawn_properties:
 
 ```yaml
 # Custom Item Name
-custom_item_name: 'Cruxifix'
+custom_item_name: 'Crucifix'
 # Custom Item Description
 custom_item_description: 'Saves you from Death!'
 # Custom Item Use Hint
@@ -219,6 +325,34 @@ custom_item_u_h:
 - |-
   "The angel of the Lord encamps around those who fear him, and he delivers them."
   — Psalm 34:7
+# Bible Custom Item Use Hint
+bible_custom_item_name: 'Holy Bible'
+bible_custom_item_description: 'It is indeed Holy!'
+bible_custom_item_hint_usage: |-
+  You can use the Bible to get out of Dangerous Situations! 
+   Just use the Item!
+bible_custom_item_no_danger: 'Theres no danger!'
+bible_custom_item_show_cooldown: 'You got Cooldown for {DurationCooldown} Seconds!'
+bible_custom_item_cooldown: '<color=red>You didn''t held the item Long enough!</color>'
+bible_custom_item_holding_hint: '<color=red>You must hold the item for {DurationTime} seconds.</color>!'
+# You can Edit the Bible Verses but do NOT Edit the Names: 'PocketDimension, NearbySCP, NearbyEnemy and LowHealth'
+bible_verses_for_bible_item:
+  PocketDimension:
+  - 'Isaiah 55:8-9: ''For my thoughts are not your thoughts, neither are your ways my ways,'' declares the Lord. ''As the heavens are higher than the earth, so are my ways higher than your ways and my thoughts than your thoughts.'''
+  - '2 Corinthians 5:1: ''For we know that if the earthly tent we live in is destroyed, we have a building from God, an eternal house in heaven, not built by human hands.'''
+  - 'Ephesians 3:18-19: ''May you have power, together with all the Lord’s holy people, to grasp how wide and long and high and deep is the love of Christ, and to know this love that surpasses knowledge—that you may be filled to the measure of all the fullness of God.'''
+  NearbySCP:
+  - 'Psalm 91:7: ''A thousand may fall at your side, ten thousand at your right hand, but it will not come near you.'''
+  - 'Isaiah 54:17: ''No weapon forged against you will prevail, and you will refute every tongue that accuses you. This is the heritage of the servants of the Lord, and this is their vindication from me,’ declares the Lord.'''
+  - 'Psalm 27:1: ''The Lord is my light and my salvation—whom shall I fear? The Lord is the stronghold of my life—of whom shall I be afraid?'''
+  NearbyEnemy:
+  - 'Romans 12:19: ''Do not take revenge, my dear friends, but leave room for God’s wrath, for it is written: ‘It is mine to avenge; I will repay,’ says the Lord.'''
+  - 'Psalm 23:5: ''You prepare a table before me in the presence of my enemies. You anoint my head with oil; my cup overflows.'''
+  - 'Matthew 5:44: ''But I tell you, love your enemies and pray for those who persecute you.'''
+  LowHealth:
+  - 'Jeremiah 30:17: ''But I will restore you to health and heal your wounds,’ declares the Lord, ‘because you are called an outcast, Zion for whom no one cares.’'''
+  - 'Psalm 147:3: ''He heals the brokenhearted and binds up their wounds.'''
+  - 'Isaiah 53:5: ''But he was pierced for our transgressions, he was crushed for our iniquities; the punishment that brought us peace was on him, and by his wounds we are healed.'''
 ```
 ## Showcase:
 
