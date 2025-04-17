@@ -26,7 +26,7 @@ namespace Cruxifix.SchematicManaging
             { Config.BibleCustomItemID, Config.BibleCustomSchematicName }
         };
 
-        private readonly Dictionary<Player, SchematicObject> activeSchematics = new();
+        public Dictionary<Player, SchematicObject> activeSchematics = new();
         private readonly Dictionary<Player, CoroutineHandle> followCoroutines = new();
 
         public SchematicHolder(Vector3 scale, Vector3 offset, Quaternion rotation)
@@ -68,7 +68,7 @@ namespace Cruxifix.SchematicManaging
                 );
             }
         }
-
+        
         public void DestroyHeld(Player player)
         {
             if (activeSchematics.TryGetValue(player, out var schematic))

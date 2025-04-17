@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Cruxifix.Configs;
+using Cruxifix.Extensions;
 using Exiled.API.Features;
 using Exiled.API.Features.Pickups;
 using Exiled.CustomItems.API.Features;
@@ -7,6 +9,7 @@ using Exiled.Events.EventArgs.Player;
 using Exiled.Events.EventArgs.Server;
 using MapEditorReborn.API.Features;
 using MapEditorReborn.API.Features.Objects;
+using Light = Exiled.API.Features.Toys.Light;
 using MEC;
 using UnityEngine;
 
@@ -16,19 +19,11 @@ namespace Cruxifix.SchematicManaging
     {
         private static readonly Config Config = Plugin.Singleton.Config;
 
+        private readonly List<CustomClasses.SchematicItems> schematicItemsList = Config.CustomSchematicItems;
+        
         private readonly Dictionary<Pickup, SchematicObject> ActiveBreads = new();
-        private readonly Dictionary<uint, string> CustomItemSchematics = new()
-        {
-            { Config.CustomItemID, Config.CustomItemSchematic },
-            { Config.BibleCustomItemID, Config.BibleCustomSchematicName }
-        };
-
-        private readonly Dictionary<uint, Vector3> CustomItemSchematicsScales = new()
-        {
-            { Config.CustomItemID, Config.CustomItemScaleItem },
-            { Config.BibleCustomItemID, Config.BibleCustomItemScale }
-        };
-
+        
+        private Dictionary<Pickup, Light> ActiveLights { get; set; } = new();
         
         private CoroutineHandle _spawnCoroutine;
 
@@ -49,6 +44,7 @@ namespace Cruxifix.SchematicManaging
                 Timing.KillCoroutines(_spawnCoroutine);
 
             ActiveBreads.Clear();
+            ActiveLights.Clear();
         }
 
         private void OnRoundStarted()
@@ -58,6 +54,12 @@ namespace Cruxifix.SchematicManaging
 
         private void OnRoundEnded(RoundEndedEventArgs _)
         {
+            foreach (var lightsource in ActiveLights.Values)
+            {
+                lightsource.Destroy();
+            }
+
+            ActiveLights.Clear();
             foreach (var schematic in ActiveBreads.Values)
             {
                 schematic.Destroy();
@@ -70,9 +72,11 @@ namespace Cruxifix.SchematicManaging
             if (ev.Pickup == null)
                 return;
 
-            if (ActiveBreads.TryGetValue(ev.Pickup, out var bread))
+            if (ActiveBreads.TryGetValue(ev.Pickup, out var bread) && ActiveLights.TryGetValue(ev.Pickup, out var lightsource))
             {
                 bread.Destroy();
+                lightsource.Destroy();
+                ActiveLights.Remove(ev.Pickup);
                 ActiveBreads.Remove(ev.Pickup);
             }
         }
@@ -85,21 +89,40 @@ namespace Cruxifix.SchematicManaging
                 {
                     if (!ActiveBreads.ContainsKey(pickup) && CustomItem.TryGet(pickup, out var customItem))
                     {
-                        if (CustomItemSchematics.TryGetValue(customItem!.Id, out var schematicName))
+                        var schematicItem = schematicItemsList.FirstOrDefault(item => item.CustomItemId == customItem!.Id);
+                        if (schematicItem != null)
                         {
-                            pickup.Scale = CustomItemSchematicsScales[customItem.Id];
+                            pickup.Scale = schematicItem.Scale;
+
                             var schematic = ObjectSpawner.SpawnSchematic(
-                                schematicName,
+                                schematicItem.Name,
                                 pickup.Position,
                                 Quaternion.Euler(pickup.Rotation.eulerAngles.x, pickup.Rotation.eulerAngles.y, 0),
                                 Vector3.one,
-                                MapUtils.GetSchematicDataByName(schematicName),
+                                MapUtils.GetSchematicDataByName(schematicItem.Name),
                                 true
                             );
+
+                            Color lightColor = CustomClasses.HexToColor(schematicItem.Color);
+
+                            var light = Light.Create(pickup.Position);
+                            light.Color = lightColor;
+                            light.Range = 5;
+                            light.Intensity = 3;
+                            light.ShadowType = LightShadows.Hard;
+                            ActiveLights[pickup] = light;
+                            
                             Events.CustomEvents.InvokeSchematicItemDropped(
-                                new Events.PlayerDropSchematicItemEventArgs(pickup.PreviousOwner, schematic, customItem.Id, pickup, pickup.Base.ItemId.TypeId)
+                                new Events.PlayerDropSchematicItemEventArgs(
+                                    pickup.PreviousOwner, 
+                                    schematic, 
+                                    customItem!.Id, 
+                                    pickup, 
+                                    pickup.Base.ItemId.TypeId
+                                )
                             );
-                            Timing.RunCoroutine(AttachSchematicToPickup(pickup, schematic));
+
+                            Timing.RunCoroutine(AttachSchematicToPickup(pickup, schematic, light));
                         }
                     }
                 }
@@ -108,7 +131,7 @@ namespace Cruxifix.SchematicManaging
             }
         }
 
-        private IEnumerator<float> AttachSchematicToPickup(Pickup pickup, SchematicObject schematic)
+        private IEnumerator<float> AttachSchematicToPickup(Pickup pickup, SchematicObject schematic, Light light)
         {
             if (pickup == null)
                 yield break;
@@ -121,18 +144,20 @@ namespace Cruxifix.SchematicManaging
             while (pickup != null && ActiveBreads.ContainsKey(pickup))
             {
                 schematic.transform.position = pickup.Position;
+                light.Transform.position = pickup.Position;
                 var rotation = pickup.Rotation.eulerAngles;
                 schematic.transform.rotation = Quaternion.Euler(rotation.x, rotation.y, 0);
 
                 yield return Timing.WaitForOneFrame;
             }
 
-            if (ActiveBreads.TryGetValue(pickup, out var bread))
+            if (ActiveBreads.TryGetValue(pickup, out var bread) && ActiveLights.TryGetValue(pickup, out var lightsource))
             {
                 bread.Destroy();
+                lightsource.Destroy();
+                ActiveLights.Remove(pickup);
                 ActiveBreads.Remove(pickup);
             }
-
         }
     }
 }

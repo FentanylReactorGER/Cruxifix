@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Exiled.API.Features;
 using Scp914;
+using UnityEngine;
 
 namespace Cruxifix.Extensions;
 
@@ -18,6 +19,32 @@ public class CustomClasses
         }
     }
 
+    public class SchematicItems
+    {
+        public string Name { get; set; }
+        public uint CustomItemId { get; set; }
+        public Vector3 Scale { get; set; }
+        
+        public string Color { get; set; }
+
+        public SchematicItems()
+        {
+        }
+        
+        public SchematicItems(string name, uint customItemId, Vector3 scale, string colorhex)
+        {
+            Name = name;
+            CustomItemId = customItemId;
+            Scale = scale;
+            Color = colorhex;
+        }
+    }
+
+    public static Color HexToColor(string hexString)
+    {
+        return ColorUtility.TryParseHtmlString(hexString, out var color) ? color : Color.white;
+    }
+    
     public class CustomItemRecipes
     {
         public ItemType? ItemIn { get; set; }

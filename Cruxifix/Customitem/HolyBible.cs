@@ -30,6 +30,8 @@ namespace Cruxifix.Customitem
         public override float Weight { get; set; } = Config.CustomItemWeight;
         public override uint Id { get; set; } = Config.BibleCustomItemID;
         public override SpawnProperties? SpawnProperties { get; set; } = Config.BibleCustomItemSpawnProperties;
+        
+        private bool IsAllowed { get; set; } = true;
 
         protected override void SubscribeEvents()
         {
@@ -49,8 +51,16 @@ namespace Cruxifix.Customitem
         {
             if (Check(ev.Item))
             {
-                ev.IsAllowed = false;
-                Core.UseBible(ev, SchematicHolder.GetHeldSchematic(ev.Player));
+                CustomEvents.InvokeUsingHolyBible(new UsingHolyBibleEventArgs(ev.Player, Plugin.Singleton.SchematicHolder.GetHeldSchematic(ev.Player), Id, ev.Player.CurrentItem.Base, ev, IsAllowed));
+                if (IsAllowed)
+                {
+                    ev.IsAllowed = false;
+                    Core.UseBible(ev, SchematicHolder.GetHeldSchematic(ev.Player));
+                }
+                else if (!IsAllowed)
+                {
+                    Log.Debug("UsingBibleEvent canceled!"); 
+                }
             }
         }
         

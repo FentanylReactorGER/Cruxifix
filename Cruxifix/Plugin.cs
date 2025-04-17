@@ -14,9 +14,9 @@ namespace Cruxifix
 {
     public class Plugin : Plugin<Configs.Config, Configs.Translation>
     {
-        public override string Name => "Cruxifix";
+        public override string Name => "Crucifix";
         public override string Author => "Whoever reads this; Jesus loves you!";
-        public override Version Version => new Version(1, 0, 0);
+        public override Version Version => new Version(1, 0, 2);
         public override Version RequiredExiledVersion => new Version(9, 6, 4);
         
         public static Plugin Singleton { get; private set; }
@@ -27,6 +27,12 @@ namespace Cruxifix
         public CustomRecipes CustomRecipes { get; private set; }
         public SchematicHolder SchematicHolder { get; private set; }
         
+        public SchematicPlacer SchematicPlacer { get; private set; }
+        
+        public CrucifixSchematic CrucifixSchematic { get; private set; }
+        
+        public CustomTranslations CustomTranslations { get; set; }
+        
         public Core Core { get; private set; }
 
         private Vector3 scale;
@@ -35,6 +41,13 @@ namespace Cruxifix
 
         public override void OnEnabled()
         {
+            CustomTranslations = new CustomTranslations();
+            CustomTranslations.LoadOrCreate();
+            SchematicPlacer = new SchematicPlacer();
+
+            CrucifixSchematic = new CrucifixSchematic();
+            CrucifixSchematic.SubscribeEvents();
+            
             Singleton = this;
             CustomRecipes = new CustomRecipes();
             CustomRecipes.SubscribeEvents();
@@ -61,10 +74,15 @@ namespace Cruxifix
         public override void OnDisabled()
         {
             Exiled.Events.Handlers.Player.ChangedItem -= SchematicHolder.OnChangedItem;
-
+            CustomTranslations = null;
+            SchematicPlacer = null;
+            
             Core = null;
             SchematicHolder = null;
 
+            CrucifixSchematic.UnsubscribeEvents();
+            CrucifixSchematic = null;
+            
             SchematicHandler.UnsubscribeEvents();
             SchematicHandler = null;
             

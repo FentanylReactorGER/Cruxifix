@@ -21,7 +21,7 @@ public static class PlayerHsmManager
         };
         playerDisplay.RemoveHint(hint);
         playerDisplay.AddHint(hint);
-        Timing.CallDelayed( Plugin.Singleton.Config.GlobalHintDuration,
+        Timing.CallDelayed(Plugin.Singleton.Config.GlobalHintDuration,
             () =>
             {
                 playerDisplay.RemoveHint(hint);

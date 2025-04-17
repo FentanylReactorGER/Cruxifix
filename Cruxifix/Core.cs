@@ -1,19 +1,23 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Cruxifix.Configs;
 using Cruxifix.Extensions;
+using CustomPlayerEffects;
 using Exiled.API.Enums;
 using Exiled.API.Extensions;
 using Exiled.API.Features;
 using Exiled.CustomItems.API.Features;
 using Exiled.Events.EventArgs.Player;
 using Exiled.Events.Handlers;
+using LabApi.Events.Arguments.PlayerEvents;
 using MapEditorReborn.API.Features.Objects;
 using MEC;
 using PlayerRoles;
 using PluginAPI.Roles;
 using UnityEngine;
 using Player = Exiled.API.Features.Player;
+using Random = UnityEngine.Random;
 
 namespace Cruxifix
 {
@@ -22,12 +26,13 @@ namespace Cruxifix
         public Dictionary<Player, float> _bibleCooldowns = new Dictionary<Player, float>();
         private static readonly Config Config = Plugin.Singleton.Config;
         private static readonly Translation Translation = Plugin.Singleton.Translation;
+        private Animator BibleAnimator { get; set; }
 
         public void UseBible(FlippingCoinEventArgs ev, SchematicObject bible)
         {
             if (_bibleCooldowns.ContainsKey(ev.Player))
             {
-                ev.Player.ShowMeowHint(Translation.BibleCustomItemShowCooldown.Replace("{DurationCooldown}", _bibleCooldowns[ev.Player].ToString("0.00")));
+                ev.Player.ShowMeowHint(Translation.BibleCustomItemShowCooldown.Replace("{DurationCooldown}", _bibleCooldowns[ev.Player].ToString("0")));
                 return;
             }
             Timing.RunCoroutine(WaitHoldingCheck(ev, bible));
@@ -53,9 +58,12 @@ namespace Cruxifix
 
             if (nearbyEnemies.Count > 0)
                 return new CustomClasses.PlayerDangerInfo("NearbyEnemy", nearbyEnemies);
-
-            if (player.CurrentRoom.Type == RoomType.HczTesla)
-                return new CustomClasses.PlayerDangerInfo("TeslaGate");
+            
+            if (player.ActiveEffects.Any(e => Enum.TryParse<EffectType>(e.name, out var effectType) && Config.BibleHealEffectList.Contains(effectType)))
+            {
+                return new CustomClasses.PlayerDangerInfo("DeadlyEffects");
+            }
+            
 
             if (player.Health <= 25)
                 return new CustomClasses.PlayerDangerInfo("LowHealth");
@@ -68,16 +76,14 @@ namespace Cruxifix
             while (_bibleCooldowns.Count > 0)
             {
                 var playersToRemove = new List<Player>();
-                foreach (var kvp in _bibleCooldowns)
-                {
-                    Player player = kvp.Key;
-                    float cooldown = kvp.Value;
 
-                    if (cooldown > 0)
-                    {
-                        _bibleCooldowns[player] = cooldown - Time.deltaTime;
-                    }
-                    else
+                var keys = _bibleCooldowns.Keys.ToList(); // To safely iterate while modifying dictionary
+
+                foreach (var player in keys)
+                {
+                    _bibleCooldowns[player] -= 1f;
+
+                    if (_bibleCooldowns[player] <= 0f)
                     {
                         playersToRemove.Add(player);
                     }
@@ -91,7 +97,6 @@ namespace Cruxifix
                 yield return Timing.WaitForSeconds(1f);
             }
         }
-
         
         public IEnumerator<float> WaitHoldingCheck(FlippingCoinEventArgs ev, SchematicObject bible)
         {
@@ -107,7 +112,7 @@ namespace Cruxifix
 
                 if (timer > 9f)
                 {
-                    PlayAnimation(bible, Config.BibleCustomAnimationName);
+                    PlayAnimation(bible, Config.BibleCustomAnimationName, Config.BibleCustomAnimatorName);
                 }
                 
                 timer += 1f;
@@ -117,6 +122,7 @@ namespace Cruxifix
             var dangerInfo = CheckDangerForBible(ev.Player);
             if (dangerInfo != null)
             {
+                AudioPlayerManager.PlaySpatialAudio(ev.Player, Config.MaxClipRange, Config.ClipVolume, Config.ClipDuration, Config.ClipNameBible);
                 _bibleCooldowns.Add(ev.Player, Random.Range(20f, 90f));
                 Timing.RunCoroutine(CooldownTick());
                 switch (dangerInfo.DangerType)
@@ -189,6 +195,17 @@ namespace Cruxifix
                             ev.Player.EnableEffect(effect, Config.BibleCustomEffectDur);
                         }
                         break;
+                    
+                    case "DeadlyEffects":
+                        ev.Player.Heal(100);
+                        foreach (EffectType effect in Config.BibleCustomItemEffects)
+                        {
+                            ev.Player.EnableEffect(effect, Config.BibleCustomEffectDur);
+                        }
+                        var VerseDeadlyEffects = Translation.BibleVersesForBibleItem["LowHealth"];
+                        ev.Player.ShowMeowHint(VerseDeadlyEffects.GetRandomValue());
+                        ev.Player.DisableAllEffects();
+                        break;
                 }
             }
             else
@@ -203,9 +220,10 @@ namespace Cruxifix
             ev.Player.ShowMeowHint(Translation.CustomItemUH.GetRandomValue());
             Plugin.Singleton.SchematicHolder.DestroyHeld(ev.Player);
             ev.Player.CurrentItem.Destroy();
+            ev.Player.DisableAllEffects();
             ApplyCrucifixEffects(ev.Player);
             HealOverTime(ev.Player, Config.CustomItemHealDur, ev);
-            AudioPlayerManager.PlaySpatialAudio(ev.Player, Config.MaxClipRange, Config.ClipVolume, Config.ClipDuration);
+            AudioPlayerManager.PlaySpatialAudio(ev.Player, Config.MaxClipRange, Config.ClipVolume, Config.ClipDuration, Config.ClipName);
         }
 
         private void ApplyCrucifixEffects(Player player)
@@ -216,19 +234,14 @@ namespace Cruxifix
             }
         }
 
-        public void PlayAnimation(SchematicObject schematic, string animationName)
+        public void PlayAnimation(SchematicObject schematic, string animationName, string animatorName)
         {
-            var animation = schematic.GetComponents<Animator>();
-            if (animation != null)
+            foreach (Animator animator in schematic.GetComponentsInChildren<Animator>())
             {
-                foreach (var animationClip in animation)
+                if (animator.name == animatorName)
                 {
-                    foreach (var animationClips in animationClip.runtimeAnimatorController.animationClips)
-                    {
-                        Log.Debug(animationClips.name);
-                    }
-                    animationClip.Play(animationName);
-                    Log.Debug(animationClip.name);
+                    BibleAnimator = animator;
+                    BibleAnimator.Play(animationName);
                 }
             }
         }

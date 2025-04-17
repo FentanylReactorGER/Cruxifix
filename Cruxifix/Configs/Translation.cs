@@ -10,6 +10,15 @@ namespace Cruxifix.Configs
 
         [Description("Custom Item Description")]
         public string CustomItemDescription { get; set; } = "Saves you from Death!";
+        
+        [Description("Error Message")]
+        public string ErrorMessage { get; set; } = "<color=red>Error in [{ErrorClass}], at: {Exception}</color>";
+        
+        [Description("No Place to place this item")]
+        public string CantPlace { get; set; } = "<color=red>You can't place here!</color>";
+        
+        [Description("Burning Curcifx Hint owner")]
+        public string BurnCrucifixHint { get; set; } = "Someone entered your Crucifx! \n He was in the Team: {EnterTeam} and now is in {EnterZone}!";
 
         [Description("Custom Item Use Hint")]
         public List<string> CustomItemUH { get; set; } = new List<string>()

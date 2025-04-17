@@ -97,3 +97,6 @@ C:\Users\Administrator\RiderProjects\Cruxifix\Cruxifix\obj\Debug\Cruxifix.csproj
 C:\Users\Administrator\RiderProjects\Cruxifix\Cruxifix\obj\Debug\Cruxifix.csproj.Up2Date
 C:\Users\Administrator\RiderProjects\Cruxifix\Cruxifix\obj\Debug\Cruxifix.dll
 C:\Users\Administrator\RiderProjects\Cruxifix\Cruxifix\obj\Debug\Cruxifix.pdb
+C:\Users\Administrator\RiderProjects\Cruxifix\Cruxifix\bin\Debug\Mirror.Components.dll
+C:\Users\Administrator\RiderProjects\Cruxifix\Cruxifix\bin\Debug\Mirror.dll
+C:\Users\Administrator\RiderProjects\Cruxifix\Cruxifix\bin\Debug\netstandard.dll

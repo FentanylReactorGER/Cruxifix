@@ -9,14 +9,14 @@ namespace Cruxifix.Extensions
     public static class AudioPlayerManager
     {
         private static bool _isAudioPlaying;
-        public static void PlaySpatialAudio(this Player player, float maxDistance, float volume, float duration)
+        public static void PlaySpatialAudio(this Player player, float maxDistance, float volume, float duration, string ClipName)
         {
             string globalPlayerName = GenerateRandomString(6);
             string speakerName = GenerateRandomString(6);
             string clipName = GenerateRandomString(6);
 
             string clipFullPath = Path.Combine(Paths.Plugins, Plugin.Singleton.Config.ClipPathFolder,
-                Plugin.Singleton.Config.ClipName);
+                ClipName);
             AudioClipStorage.LoadClip(clipFullPath, clipName);
 
             var audioSource = AudioPlayer.Create(globalPlayerName);
